@@ -71,6 +71,7 @@ async function rebuildMatcher() {
     const { keywords = [] } = await chrome.storage.local.get("keywords");
     if (!Array.isArray(keywords) || keywords.length === 0) {
         matcher = null;
+        console.log("got no keywords in rebuildMatcher");
         return false;
     }
     matcher = new AhoCorasick(keywords.map((k) => k.toLowerCase()));
@@ -82,7 +83,8 @@ async function rebuildMatcher() {
 async function getLatestPostId(retry = 2) {
     console.log("getLatestPostId");
     try {
-        const response = await axiosInstance.get("https://www.reddit.com/r/all/new.json?limit=1");
+        const response = await axiosInstance.get("https://www.reddit.com/r/all/new.json?limit=2");
+        console.log(response);
         return response.data.data.children[0].data.id;
     }
     catch (err) {
@@ -96,21 +98,29 @@ async function getAllPosts() {
     const { lastSeenId } = await chrome.storage.local.get("lastSeenId");
     const newestPostId = await getLatestPostId();
     if (!newestPostId)
-        return;
+        {console.log("didn't got the newwstPostId");
+        return;}
+        console.log("NEWEST POST ID: ", newestPostId);
     let latest = parseInt(newestPostId, 36);
-    const stopAt = lastSeenId ? parseInt(lastSeenId, 36) : null;
+    // const stopAt = lastSeenId ? parseInt(lastSeenId, 36) : null;
+
+
+    console.log("calling outside the loop");
+
+
     outer: for (let i = 0; i < 20; i++) {
         console.log("fetching posts");
         const batch = [];
         for (let j = 0; j < 100; j++) {
             const id = (latest - 1).toString(36);
-            if (stopAt && parseInt(id, 36) === stopAt)
-                break outer;
+            if (id === lastSeenId)
+               { break outer;}
             latest--;
             batch.push("t3_" + id);
         }
         const url = "https://api.reddit.com/api/info.json?id=" + batch.join(",");
         const response = await axiosInstance.get(url);
+
         for (const child of response.data.data.children) {
             if (!child.data.over_18 &&
                 child.data.whitelist_status !== "promo_adult_nsfw") {
@@ -148,7 +158,9 @@ async function matchAndStore() {
 /* =======================
    MAIN LOOP
 ======================= */
+
 const ALARM_NAME = "reddit-poll";
+
 async function startService() {
     console.log("startService called");
     await chrome.storage.local.set({ isRunning: true });
@@ -156,10 +168,12 @@ async function startService() {
         periodInMinutes: 1.2, // ~70 seconds
     });
 }
+
 async function stopService() {
     await chrome.storage.local.set({ isRunning: false });
     chrome.alarms.clear(ALARM_NAME);
 }
+
 async function run() {
     const { isRunning } = await chrome.storage.local.get("isRunning");
     if (!isRunning)
@@ -167,6 +181,9 @@ async function run() {
     const ready = await rebuildMatcher();
     if (!ready)
         {console.log("rebuildMatcher wasn't ready, run() ABBORTED... "); return};
+    //clearingh previous if there is any 
+    listingQueue.length = 0;
+    console.log("getAllPosts is being called");
     await getAllPosts();
     await matchAndStore();
 }
@@ -200,4 +217,3 @@ chrome.alarms.onAlarm.addListener((alarm) => {
         run();
     }
 });
-//# sourceMappingURL=index.js.map

@@ -57,9 +57,9 @@ document.getElementById("addKeywordBtn").onclick = async () => {
 
   const { keywords = [] } = await chrome.storage.local.get("keywords");
   //NOTE// added spacing both side of words -------
-  if (keywords.includes(" "+value+ " " )) return;
+  if (keywords.includes(value)) return;
 
-  keywords.push(value);
+  keywords.push(" "+value+" ");
   await chrome.storage.local.set({ keywords });
 
   chrome.runtime.sendMessage({ action: "KEYWORDS_UPDATED" });
