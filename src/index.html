@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Reddit Matcher</title>
+  <link rel="stylesheet" href="popup.css" />
+  
+  <style>
+    *{
+      color: white;
+      background-color: black;
+    }
+
+  .keywords {
+    margin-bottom: 12px;
+  }
+
+  .keywords input {
+    width: 70%;
+    padding: 6px;
+  }
+
+  .keywords button {
+    padding: 6px;
+  }
+
+  .keywords li {
+    font-size: 12px;
+    margin-top: 4px;
+    display: flex;
+    justify-content: space-between;
+  }
+</style>
+</head>
+
+<body>
+  <div class="app" style="width: 100vh; height: 200vh; ">
+    <h1>Reddit Matcher</h1>
+
+    <div class="controls">
+      <button id="clearDbBtn" style="margin-top:8px;">Clear all posts</button>
+      <button id="startBtn">Start</button>
+      <button id="stopBtn">Stop</button>
+      <div class="keywords">
+      <input id="keywordInput" type="text" placeholder="Add keyword…" />
+      <button id="addKeywordBtn">Add</button>
+      <ul id="keywordList"></ul>
+    </div>
+
+    <div id="status">Status: …</div>
+    <div id="posts" style="display: flex; flex-direction: column; gap: 5px;"></div>
+
+</div>
+
+  </div>
+
+  <!-- ✅ allowed -->
+  <script src="popup.js"></script>
+</body>
+</html>
